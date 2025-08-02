@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Redirect Generator</title>
+</head>
+<body>
+  <h2>🛠 Generator Link Redirect + Thumbnail</h2>
+  <form id="linkForm">
+    <label>Link Berita:</label><br>
+    <input type="url" name="news" required><br><br>
+    <label>Link Affiliate:</label><br>
+    <input type="url" name="affiliate" required><br><br>
+    <button type="submit">Generate 🔗</button>
+  </form>
+  <div id="result" style="margin-top:20px;"></div>
+
+  <script>
+    document.getElementById("linkForm").onsubmit = async (e) => {
+      e.preventDefault();
+      const form = new FormData(e.target);
+      const res = await fetch("/.netlify/functions/generate", {
+        method: "POST",
+        body: JSON.stringify({
+          news: form.get("news"),
+          affiliate: form.get("affiliate")
+        }),
+      });
+      const data = await res.json();
+      document.getElementById("result").innerHTML = `
+        ✅ Link siap share:<br>
+        <a href="${data.url}" target="_blank">${data.url}</a>
+      `;
+    };
+  </script>
+</body>
+</html>
