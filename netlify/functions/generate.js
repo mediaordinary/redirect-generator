@@ -1,35 +1,42 @@
-const fs = require('fs');
-const path = require('path');
+const fetch = require('node-fetch');
 
 exports.handler = async (event) => {
-  const body = JSON.parse(event.body);
-  const { news, affiliate } = body;
+  try {
+    const { news, aff } = JSON.parse(event.body);
+    const slug = Math.random().toString(36).substr(2, 6);
 
-  // Fetch metadata dari link berita
-  const ogImage = `https://image.thum.io/get/ogImage/${news}`;
-  const ogTitle = `Berita Menarik`;
+    // Fetch metadata dari berita
+    const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(news)}`);
+    const html = await res.text();
+    const m = html.match(/<meta[^>]+property="og:title"[^>]+content="([^"]+)"/);
+    const title = m ? m[1] : 'Baca berita selengkapnya';
+    const m2 = html.match(/<meta[^>]+property="og:image"[^>]+content="([^"]+)"/);
+    const image = m2 ? m2[1] : '';
 
-  const slug = Math.random().toString(36).substring(2, 8); // random id
-  const filename = `go/${slug}.html`;
-
-  const html = `
-<!DOCTYPE html>
-<html>
+    // Generate konten HTML redirect
+    const page = `<!DOCTYPE html>
+<html lang="id">
 <head>
-  <meta http-equiv="refresh" content="3;url=${affiliate}">
-  <meta property="og:title" content="${ogTitle}" />
-  <meta property="og:image" content="${ogImage}" />
-  <meta property="og:url" content="${news}" />
-</head>
-<body>
-  <p>🔁 Redirect ke halaman afiliasi...</p>
-</body>
-</html>`;
+  <meta charset="UTF‑8">
+  <meta property="og:title" content="${title}">
+  <meta property="og:description" content="Klik untuk mendapatkan penawaran affiliate">
+  <meta property="og:image" content="${image}">
+  <meta property="og:url" content="${news}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta http-equiv="refresh" content="2;url=${aff}">
+  <title>Redirecting...</title>
+</head><body>
+<p>Mengarahkan...</p></body></html>`;
 
-  fs.writeFileSync(path.join(__dirname, '../../', filename), html);
+    // Simpan ke folder publik
+    const fs = require('fs');
+    fs.writeFileSync(`${__dirname}/../public/r/${slug}.html`, page);
 
-  return {
-    statusCode: 200,
-    body: JSON.stringify({ url: `https://namasite.netlify.app/go/${slug}.html` }),
-  };
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ slug }),
+    };
+  } catch (err) {
+    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
+  }
 };
