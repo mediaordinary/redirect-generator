@@ -1,8 +1,8 @@
 [build]
-  functions = "netlify/functions"
-  publish = "."
+  functions = "functions"
+  publish = "public"
 
 [[redirects]]
-  from = "/go/*"
-  to = "/go/:splat"
+  from = "/r/*"
+  to = "/r/:splat.html"
   status = 200
