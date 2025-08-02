@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Redirect Generator Online</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body { font-family:sans-serif; max-width:480px; margin:auto; padding:20px;}
+    input,button { width:100%; padding:10px; margin:5px 0; }
+    .output { background:#e0f7fa; padding:10px; margin-top:10px; word-break:break-all;}
+  </style>
+</head>
+<body>
+  <h2>🔗 Buat Redirect Link Otomatis</h2>
+  <input id="news" type="url" placeholder="Link berita (untuk preview)">
+  <input id="aff" type="url" placeholder="Link affiliate (tujuan redirect)">
+  <button onclick="generate()">Generate Link</button>
+  <div class="output" id="output" style="display:none;"></div>
+
+  <script>
+    async function generate(){
+      const news = document.getElementById('news').value.trim();
+      const aff = document.getElementById('aff').value.trim();
+      if(!news || !aff) return alert('Isi kedua kolom!');
+
+      const res = await fetch('/.netlify/functions/generate', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ news, aff })
+      });
+      const data = await res.json();
+      if(data.error) {
+        document.getElementById('output').innerText = '❌ ' + data.error;
+      } else {
+        const link = `${location.origin}/r/${data.slug}`;
+        document.getElementById('output').innerHTML = `✅ Link siap dibagikan:<br><a href="${link}" target="_blank">${link}</a>`;
+      }
+      document.getElementById('output').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
