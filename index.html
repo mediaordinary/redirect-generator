@@ -1,37 +1,99 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Redirect Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Redirect Generator by Media Ordinary</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    h1 {
+      color: #333;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      margin-bottom: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .output {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px dashed #ccc;
+      background-color: #f9f9f9;
+    }
+    a {
+      color: #007bff;
+      text-decoration: none;
+    }
+  </style>
 </head>
 <body>
-  <h2>🛠 Generator Link Redirect + Thumbnail</h2>
-  <form id="linkForm">
-    <label>Link Berita:</label><br>
-    <input type="url" name="news" required><br><br>
-    <label>Link Affiliate:</label><br>
-    <input type="url" name="affiliate" required><br><br>
-    <button type="submit">Generate 🔗</button>
-  </form>
-  <div id="result" style="margin-top:20px;"></div>
+  <h1>🔗 Redirect Generator</h1>
+  <p>Masukkan link berita dan link affiliate kamu, lalu klik tombol "Generate".</p>
+
+  <label>Link Berita:</label>
+  <input type="text" id="newsLink" placeholder="https://example.com/berita" />
+
+  <label>Link Affiliate:</label>
+  <input type="text" id="affiliateLink" placeholder="https://shope.ee/..." />
+
+  <button id="generateBtn">Generate Redirect</button>
+
+  <div class="output" id="result"></div>
 
   <script>
-    document.getElementById("linkForm").onsubmit = async (e) => {
-      e.preventDefault();
-      const form = new FormData(e.target);
-      const res = await fetch("/.netlify/functions/generate", {
-        method: "POST",
-        body: JSON.stringify({
-          news: form.get("news"),
-          affiliate: form.get("affiliate")
-        }),
-      });
-      const data = await res.json();
-      document.getElementById("result").innerHTML = `
-        ✅ Link siap share:<br>
-        <a href="${data.url}" target="_blank">${data.url}</a>
+    document.getElementById("generateBtn").addEventListener("click", function () {
+      const berita = document.getElementById("newsLink").value.trim();
+      const affiliate = document.getElementById("affiliateLink").value.trim();
+
+      if (!berita || !affiliate) {
+        alert("Harap isi kedua link terlebih dahulu!");
+        return;
+      }
+
+      const redirectHTML = `
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta property="og:title" content="Baca Berita, Dapatkan Produk Terkait!">
+    <meta property="og:description" content="Cek produk terkait berita ini sekarang juga.">
+    <meta property="og:image" content="https://i.ibb.co/hBdQ3Db/thumb.jpg">
+    <meta http-equiv="refresh" content="0;url=${affiliate}" />
+  </head>
+  <body>
+    <p>Redirecting to affiliate link...</p>
+  </body>
+</html>`;
+
+      const blob = new Blob([redirectHTML], { type: "text/html" });
+      const url = URL.createObjectURL(blob);
+
+      const output = `
+✅ File redirect berhasil dibuat!<br><br>
+⬇️ <a href="${url}" download="index.html">Klik di sini untuk download index.html</a><br><br>
+📤 Upload file ini ke Netlify atau Vercel untuk dapat link siap share di Facebook / WhatsApp.
       `;
-    };
+
+      document.getElementById("result").innerHTML = output;
+    });
   </script>
 </body>
 </html>
